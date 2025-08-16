@@ -1,175 +1,68 @@
-#define light_FR  14    //LED Front Right
-#define light_FL  15    //LED Front Left
-#define light_BR  16    //LED Back Right
-#define light_BL  17    //LED Back Left
-#define horn_Buzz 18    //Horn Buzzer   
+here#include <AFMotor.h>
+#include <SoftwareSerial.h>
 
-int command;
+// Create objects for the motors
+AF_DCMotor motor1(1); 
+AF_DCMotor motor2(2); 
+AF_DCMotor motor3(3);
+AF_DCMotor motor4(4); 
 
-bool moveForward = false;
-bool moveBackward = false;
-bool turnLeft = false;
-bool turnRight = false;
-bool lightFront = false;
-bool lightBack = false;
-bool horn = false;
+// Create a SoftwareSerial object for Bluetooth communication
+// Pins (RX, TX)
+SoftwareSerial bluetooth(0,1 ); // Arduino RX pin, Arduino TX pin
+
+const int motorSpeed = 200; // Speed of the motors
 
 void setup() {
-  pinMode(light_FR, OUTPUT);
-  pinMode(light_FL, OUTPUT);
-  pinMode(light_BR, OUTPUT);
-  pinMode(light_BL, OUTPUT);
-  pinMode(horn_Buzz, OUTPUT);
+  // Set motor speeds
+  motor1.setSpeed(motorSpeed);
+  motor2.setSpeed(motorSpeed);
+  motor3.setSpeed(motorSpeed);
+  motor4.setSpeed(motorSpeed);
 
-  Serial.begin(9600);  //Set the baud rate to your Bluetooth module.
+  // Start serial communication with the computer for debugging
+  Serial.begin(9600);
+  // Start serial communication with the Bluetooth module
+  bluetooth.begin(9600);
+
+  Serial.println("Robot Ready. Connect via Bluetooth.");
 }
 
-/*
+void loop() {
+  // Check if data is available from the Bluetooth module
+  if (bluetooth.available()) {
+    char command = bluetooth.read(); // Read the incoming character
 
-  Just write forward(), back(), left(), right() and stop() function and you are good to go.
-
-*/
-
-
-void forward() {
-
-}
-
-void back() {
-
-}
-
-void left() {
-
-}
-
-void right() {
-
-}
-
-void Stop() {
-
-}
-
-void loop()
-{
-  if (moveForward)
-  {
-    forward();
-  }
-  else
-  {
-    Stop();
-  }
-
-  if (moveBackward)
-  {
-    back();
-  }
-  else
-  {
-    Stop();
-  }
-
-  if (turnLeft)
-  {
-    left();
-  }
-  else
-  {
-    Stop();
-  }
-
-  if (turnRight)
-  {
-    right();
-  }
-  else
-  {
-    Stop();
-  }
-
-  if (lightFront)
-  {
-    digitalWrite(light_FR, HIGH);
-    digitalWrite(light_FL, HIGH);
-  }
-  else
-  {
-    digitalWrite(light_FR, LOW);
-    digitalWrite(light_FL, LOW);
-  }
-
-  if (lightBack)
-  {
-    digitalWrite(light_BR, HIGH);
-    digitalWrite(light_BL, HIGH);
-  }
-  else
-  {
-    digitalWrite(light_BR, LOW);
-    digitalWrite(light_BL, LOW);
-  }
-
-  if (horn)
-  {
-    digitalWrite(horn_Buzz, HIGH);
-  }
-  else
-  {
-    digitalWrite(horn_Buzz, LOW);
-  }
-
-  if (Serial.available() > 0) {
-
-    command = (char)Serial.read();
+    // Print the command to the serial monitor for debugging
+    Serial.print("Command received: ");
     Serial.println(command);
 
-    switch (command) {
-      case 'F':
-        moveForward = true;
-        break;
-      case 'f':
-        moveForward = false;
-        break;
-      case 'B':
-        moveBackward = true;
-        break;
-      case 'b':
-        moveBackward = false;
-        break;
-      case 'L':
-        turnLeft = true;
-        break;
-      case 'l':
-        turnLeft = false;
-        break;
-      case 'R':
-        turnRight = true;
-        break;
-      case 'r':
-        turnRight = false;
-        break;
-      case 'U':
-        lightFront = true;
-        break;
-      case 'u':
-        lightFront = false;
-        break;
-      case 'V':
-        lightBack = true;
-        break;
-      case 'v':
-        lightBack = false;
-        break;
-      case 'W':
-        horn = true;
-        break;
-      case 'w':
-        horn = false;
-        break;
-
-      default: Stop();
+    // Control the motors based on the received command
+    if (command == 'f') { // Forward
+      motor1.run(FORWARD);
+      motor2.run(FORWARD);
+      motor3.run(FORWARD);
+      motor4.run(FORWARD);
+    } else if (command == 'b') { // Backward
+      motor1.run(BACKWARD);
+      motor2.run(BACKWARD);
+      motor3.run(BACKWARD);
+      motor4.run(BACKWARD);
+    } else if (command == 'l') { // Turn Left
+      motor1.run(BACKWARD);
+      motor2.run(FORWARD);
+      motor3.run(BACKWARD);
+      motor4.run(FORWARD);
+    } else if (command == 'r') { // Turn Right
+      motor1.run(FORWARD);
+      motor2.run(BACKWARD);
+      motor3.run(FORWARD);
+      motor4.run(BACKWARD);
+    } else if (command == 's') { // Stop
+      motor1.run(RELEASE);
+      motor2.run(RELEASE);
+      motor3.run(RELEASE);
+      motor4.run(RELEASE);
     }
   }
 }
